@@ -339,9 +339,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.sha }}
+          # Full history + tags, because the version is derived from `git describe`
+          # (the CI core runs the version script with --update-pyproject for a
+          # pure-Python project). A release run tags HEAD from CBCI_VERSION and would
+          # describe fine even shallow; a non-release run has no tag to make, and a
+          # depth-1 tagless fetch would stamp the artifacts 0.0.1.
+          fetch-depth: 0
       - name: Checkout (no SHA)
         if: inputs.sha == ''
         uses: actions/checkout@v4
+        with:
+          # Full history + tags, because the version is derived from `git describe`
+          # (the CI core runs the version script with --update-pyproject for a
+          # pure-Python project). A release run tags HEAD from CBCI_VERSION and would
+          # describe fine even shallow; a non-release run has no tag to make, and a
+          # depth-1 tagless fetch would stamp the artifacts 0.0.1.
+          fetch-depth: 0
       - name: Download CI scripts
         uses: actions/download-artifact@v4
         with:
