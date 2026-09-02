@@ -36,10 +36,15 @@ on:
 
 env:
   CBCI_PROJECT_TYPE: "ANALYTICS"
+  # Must match support.default_python in the CI-core's ci-config-pycbac.yaml; gha.py fails
+  # the run if they disagree. Kept here because a GHA expression cannot call into Python and
+  # the single-node jobs below need it for actions/setup-python.
   CBCI_DEFAULT_PYTHON: "3.10"
-  CBCI_SUPPORTED_PYTHON_VERSIONS: "3.10 3.11 3.12 3.13 3.14"
-  CBCI_SUPPORTED_X86_64_PLATFORMS: "linux alpine macos windows"
-  CBCI_SUPPORTED_ARM64_PLATFORMS: "linux macos"
+  # The support matrix (python versions, platforms per arch) is NOT here any more. It lives
+  # in the CI-core's ci-config-pycbac.yaml, which is the only thing that reads it now, and
+  # keeping a second copy meant a run could fan out over versions this file did not list.
+  # Override a run from the workflow_dispatch config input, or with the PYTHON_VERSIONS /
+  # PLATFORMS / ARCHES promoted vars.
   CBCI_DEFAULT_LINUX_X86_64_PLATFORM: "ubuntu-24.04"
   CBCI_DEFAULT_LINUX_ARM64_PLATFORM: "ubuntu-24.04-arm"
   CBCI_DEFAULT_MACOS_X86_64_PLATFORM: "macos-15-intel"
@@ -48,7 +53,7 @@ env:
   CBCI_DEFAULT_LINUX_CONTAINER: "slim-bookworm"
   CBCI_DEFAULT_ALPINE_CONTAINER: "alpine"
   CBCI_CBDINO_VERSION: "v0.0.80"
-  CI_SCRIPTS_URL: "https://raw.githubusercontent.com/couchbaselabs/sdkbuild-jenkinsfiles/master/python/ci_scripts_v1"
+  CI_SCRIPTS_URL: "https://raw.githubusercontent.com/couchbaselabs/sdkbuild-jenkinsfiles/master/python/ci_scripts_v2"
 
 jobs:
   default-linux-runner:
@@ -63,13 +68,17 @@ jobs:
     needs: default-linux-runner
     runs-on: ${{ needs.default-linux-runner.outputs.runner }}
     steps:
-      - name: Download CI Scripts
+      # bootstrap.sh is the ONLY file named here. It fetches the rest of the CI core at a
+      # pinned ref and verifies every file's sha256 before anything runs, so adding a core
+      # file never needs an edit in this repo.
+      - name: Bootstrap CI core
+        env:
+          CBCI_DEST: ci_scripts
         run: |
-          mkdir ci_scripts
-          cd ci_scripts
-          curl -o gha.sh ${CI_SCRIPTS_URL}/gha.sh
-          curl -o pygha.py ${CI_SCRIPTS_URL}/pygha.py
-          ls -alh
+          curl -fsSL ${CI_SCRIPTS_URL}/bootstrap.sh -o bootstrap.sh
+          chmod +x bootstrap.sh
+          ./bootstrap.sh
+          ls -alh ci_scripts
       - name: Upload CI scripts
         uses: actions/upload-artifact@v4
         with:
@@ -95,14 +104,16 @@ jobs:
       - name: Verify Scripts
         run: |
           ls -alh ci_scripts
-          chmod +x ci_scripts/gha.sh
+          chmod +x ci_scripts/tasks.sh
           ls -alh ci_scripts
+      - name: Install engine dependency
+        run: python3 -m pip install --quiet pyyaml
       - name: Display workflow info
         run: |
-          ./ci_scripts/gha.sh display_info
+          ./ci_scripts/tasks.sh display-info
       - name: Validate workflow info
         run: |
-          ./ci_scripts/gha.sh validate_input ${{ github.workflow }}
+          python3 ./ci_scripts/gha.py validate-input '${{ github.workflow }}'
 
   publish-config:
     needs: [validate-input, default-linux-runner]
@@ -124,18 +135,20 @@ jobs:
           path: ci_scripts
       - name: Enable CI Scripts
         run: |
-          chmod +x ci_scripts/gha.sh
+          chmod +x ci_scripts/tasks.sh
       - name: Setup Python ${{ env.CBCI_DEFAULT_PYTHON }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.CBCI_DEFAULT_PYTHON }}
       - name: Confirm Python version
         run: python -c "import sys; print(sys.version)"
+      - name: Install engine dependency
+        run: python -m pip install --quiet pyyaml
       - name: Set public config
         id: set_config
         run: |
           exit_code=0
-          PUBLISH_CONFIG=$(./ci_scripts/gha.sh build_publish_config) || exit_code=$?
+          PUBLISH_CONFIG=$(python3 ./ci_scripts/gha.py publish-config) || exit_code=$?
           if [ $exit_code -ne 0 ]; then
             echo "Failed to obtain publish config."
             exit 1

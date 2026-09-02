@@ -51,10 +51,15 @@ on:
 
 env:
   CBCI_PROJECT_TYPE: "ANALYTICS"
+  # Must match support.default_python in the CI-core's ci-config-pycbac.yaml; gha.py fails
+  # the run if they disagree. Kept here because a GHA expression cannot call into Python and
+  # the single-node jobs below need it for actions/setup-python.
   CBCI_DEFAULT_PYTHON: "3.10"
-  CBCI_SUPPORTED_PYTHON_VERSIONS: "3.10 3.11 3.12 3.13 3.14"
-  CBCI_SUPPORTED_X86_64_PLATFORMS: "linux alpine macos windows"
-  CBCI_SUPPORTED_ARM64_PLATFORMS: "linux macos"
+  # The support matrix (python versions, platforms per arch) is NOT here any more. It lives
+  # in the CI-core's ci-config-pycbac.yaml, which is the only thing that reads it now, and
+  # keeping a second copy meant a run could fan out over versions this file did not list.
+  # Override a run from the workflow_dispatch config input, or with the PYTHON_VERSIONS /
+  # PLATFORMS / ARCHES promoted vars.
   CBCI_DEFAULT_LINUX_X86_64_PLATFORM: "ubuntu-24.04"
   CBCI_DEFAULT_LINUX_ARM64_PLATFORM: "ubuntu-24.04-arm"
   CBCI_DEFAULT_MACOS_X86_64_PLATFORM: "macos-15-intel"
@@ -63,7 +68,7 @@ env:
   CBCI_DEFAULT_LINUX_CONTAINER: "slim-bookworm"
   CBCI_DEFAULT_ALPINE_CONTAINER: "alpine"
   CBCI_CBDINO_VERSION: "v0.0.80"
-  CI_SCRIPTS_URL: "https://raw.githubusercontent.com/couchbaselabs/sdkbuild-jenkinsfiles/master/python/ci_scripts_v1"
+  CI_SCRIPTS_URL: "https://raw.githubusercontent.com/couchbaselabs/sdkbuild-jenkinsfiles/master/python/ci_scripts_v2"
 
 jobs:
   default-linux-runner:
@@ -78,13 +83,17 @@ jobs:
     needs: default-linux-runner
     runs-on: ${{ needs.default-linux-runner.outputs.runner }}
     steps:
-      - name: Download CI Scripts
+      # bootstrap.sh is the ONLY file named here. It fetches the rest of the CI core at a
+      # pinned ref and verifies every file's sha256 before anything runs, so adding a core
+      # file never needs an edit in this repo.
+      - name: Bootstrap CI core
+        env:
+          CBCI_DEST: ci_scripts
         run: |
-          mkdir ci_scripts
-          cd ci_scripts
-          curl -o gha.sh ${CI_SCRIPTS_URL}/gha.sh
-          curl -o pygha.py ${CI_SCRIPTS_URL}/pygha.py
-          ls -alh
+          curl -fsSL ${CI_SCRIPTS_URL}/bootstrap.sh -o bootstrap.sh
+          chmod +x bootstrap.sh
+          ./bootstrap.sh
+          ls -alh ci_scripts
       - name: Upload CI scripts
         uses: actions/upload-artifact@v4
         with:
@@ -110,14 +119,16 @@ jobs:
       - name: Verify Scripts
         run: |
           ls -alh ci_scripts
-          chmod +x ci_scripts/gha.sh
+          chmod +x ci_scripts/tasks.sh
           ls -alh ci_scripts
+      - name: Install engine dependency
+        run: python3 -m pip install --quiet pyyaml
       - name: Display workflow info
         run: |
-          ./ci_scripts/gha.sh display_info
+          ./ci_scripts/tasks.sh display-info
       - name: Validate workflow info
         run: |
-          ./ci_scripts/gha.sh validate_input ${{ github.workflow }}
+          python3 ./ci_scripts/gha.py validate-input '${{ github.workflow }}'
 
   setup:
     needs: [validate-input, default-linux-runner]
@@ -135,18 +146,20 @@ jobs:
           path: ci_scripts
       - name: Enable CI Scripts
         run: |
-          chmod +x ci_scripts/gha.sh
+          chmod +x ci_scripts/tasks.sh
       - name: Setup Python ${{ env.CBCI_DEFAULT_PYTHON }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.CBCI_DEFAULT_PYTHON }}
       - name: Confirm Python version
         run: python -c "import sys; print(sys.version)"
+      - name: Install engine dependency
+        run: python -m pip install --quiet pyyaml
       - name: Build stage matrices
         id: build_matrices
         run: |
           exit_code=0
-          STAGE_MATRICES=$(./ci_scripts/gha.sh get_stage_matrices) || exit_code=$?
+          STAGE_MATRICES=$(python3 ./ci_scripts/gha.py matrices) || exit_code=$?
           if [ $exit_code -ne 0 ]; then
             echo "Failed to obtain stage matrices."
             exit 1
@@ -214,18 +227,34 @@ jobs:
           path: ci_scripts
       - name: Enable CI Scripts
         run: |
-          chmod +x ci_scripts/gha.sh
+          chmod +x ci_scripts/tasks.sh
       - name: Setup Python ${{ env.CBCI_DEFAULT_PYTHON }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.CBCI_DEFAULT_PYTHON }}
       - name: Confirm Python version
         run: python -c "import sys; print(sys.version)"
+      - name: Install engine dependency
+        run: python -m pip install --quiet pyyaml
       - name: Build test setup
+        env:
+          # Build the tree at the workspace root, so it lands at ./pycbac_test the way the
+          # v1 script placed it. tasks.sh otherwise stages it under .cbci_test, which is for
+          # local reuse across repeated `tasks.sh test` runs.
+          CBCI_TEST_DIR: "."
         run: |
-          ./ci_scripts/gha.sh build_test_setup
+          ./ci_scripts/tasks.sh test-setup
+      - name: Build cbdinocluster definition
+        run: |
+          # The cluster def-file rides along inside the test-setup artifact, because the job
+          # that allocates the cluster downloads that artifact and allocates from its
+          # directory. Adapter work, not core: cbdinocluster is GHA's realization of the
+          # neutral test.integration spec (Jenkins uses cbdyncluster).
+          python3 ./ci_scripts/gha.py cbdino-config pycbac_test
       - name: Confirm test setup
         run: |
+          echo "pycbac_test/cluster_def.yaml contents:"
+          cat pycbac_test/cluster_def.yaml
           echo "pycbac_test directory contents:"
           ls -alh pycbac_test
           echo "pycbac_test/acb/tests contents:"
@@ -307,7 +336,7 @@ jobs:
             if [ "$TEST_ACOUCHBASE_API" = "true" ]; then
                 PYTEST_ACB_CMD="${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.acouchbase_cmd }}"
                 PYTEST_ACB_OPTS="${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.acouchbase_opts }}"
-                PYTEST_CMD="python -m $PYTEST_ACB_CMD $PYTEST_ACB_OPTS"
+                PYTEST_CMD="$PYTEST_ACB_CMD $PYTEST_ACB_OPTS"
                 echo "Running acouchbase tests: $PYTEST_CMD"
                 eval "$PYTEST_CMD"
             fi
@@ -315,7 +344,7 @@ jobs:
             if [ "$TEST_COUCHBASE_API" = "true" ]; then
                 PYTEST_CB_CMD="${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.couchbase_cmd }}"
                 PYTEST_CB_OPTS="${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.couchbase_opts }}"
-                PYTEST_CMD="python -m $PYTEST_CB_CMD $PYTEST_CB_OPTS"
+                PYTEST_CMD="$PYTEST_CB_CMD $PYTEST_CB_OPTS"
                 echo "Running acouchbase tests: $PYTEST_CMD"
                 eval "$PYTEST_CMD"
             fi
@@ -358,13 +387,13 @@ jobs:
           python -m pip list
           TEST_ACOUCHBASE_API=${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_acouchbase_api }}
           if [ "$TEST_ACOUCHBASE_API" = "true" ]; then
-              PYTEST_CMD="python -m $PYTEST_ACB_CMD $PYTEST_ACB_OPTS"
+              PYTEST_CMD="$PYTEST_ACB_CMD $PYTEST_ACB_OPTS"
               echo "Running acouchbase tests: $PYTEST_CMD"
               eval "$PYTEST_CMD"
           fi
           TEST_COUCHBASE_API=${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_couchbase_api }}
           if [ "$TEST_COUCHBASE_API" = "true" ]; then
-              PYTEST_CMD="python -m $PYTEST_CB_CMD $PYTEST_CB_OPTS"
+              PYTEST_CMD="$PYTEST_CB_CMD $PYTEST_CB_OPTS"
               echo "Running couchbase tests: $PYTEST_CMD"
               eval "$PYTEST_CMD"
           fi
@@ -407,13 +436,13 @@ jobs:
           python -m pip list
           TEST_ACOUCHBASE_API=${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_acouchbase_api }}
           if [ "$TEST_ACOUCHBASE_API" = "true" ]; then
-              PYTEST_CMD="python -m $PYTEST_ACB_CMD $PYTEST_ACB_OPTS"
+              PYTEST_CMD="$PYTEST_ACB_CMD $PYTEST_ACB_OPTS"
               echo "Running acouchbase tests: $PYTEST_CMD"
               eval "$PYTEST_CMD"
           fi
           TEST_COUCHBASE_API=${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_couchbase_api }}
           if [ "$TEST_COUCHBASE_API" = "true" ]; then
-              PYTEST_CMD="python -m $PYTEST_CB_CMD $PYTEST_CB_OPTS"
+              PYTEST_CMD="$PYTEST_CB_CMD $PYTEST_CB_OPTS"
               echo "Running couchbase tests: $PYTEST_CMD"
               eval "$PYTEST_CMD"
           fi
@@ -456,13 +485,13 @@ jobs:
           python -m pip list
           $TEST_ACOUCHBASE_API="${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_acouchbase_api }}"
           if ( $TEST_ACOUCHBASE_API -eq "true" ) {
-              $PYTEST_CMD="python -m $($env:PYTEST_ACB_CMD) $($env:PYTEST_ACB_OPTS)"
+              $PYTEST_CMD="$($env:PYTEST_ACB_CMD) $($env:PYTEST_ACB_OPTS)"
               echo "Running acouchbase tests: $PYTEST_CMD"
               iex $PYTEST_CMD
           }
           $TEST_COUCHBASE_API="${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_couchbase_api }}"
           if ( $TEST_COUCHBASE_API = "true" ) {
-              $PYTEST_CMD="python -m $($env:PYTEST_CB_CMD) $($env:PYTEST_CB_OPTS)"
+              $PYTEST_CMD="$($env:PYTEST_CB_CMD) $($env:PYTEST_CB_OPTS)"
               echo "Running couchbase tests: $PYTEST_CMD"
               iex $PYTEST_CMD
           }
@@ -507,7 +536,9 @@ jobs:
           path: ci_scripts
       - name: Enable CI Scripts
         run: |
-          chmod +x ci_scripts/gha.sh
+          chmod +x ci_scripts/tasks.sh
+      - name: Install engine dependency
+        run: python -m pip install --quiet pyyaml
       - name: Download test setup
         uses: actions/download-artifact@v4
         with:
@@ -530,7 +561,7 @@ jobs:
           PYCBAC_FQDN: 'travel-sample.inventory.airline'
           CBCONNSTR: ${{ env.CBDC_CONNSTR }}
         run: |
-          ./ci_scripts/gha.sh build_test_config_ini pycboi/tests
+          ./ci_scripts/tasks.sh test-config pycboi/tests
       - name: Run tests
         timeout-minutes: 30
         env:
@@ -552,13 +583,13 @@ jobs:
             python -m pip list
             TEST_ACOUCHBASE_API=${{ fromJson(needs.setup.outputs.stage_matrices).test_integration.test_acouchbase_api }}
             if [ "$TEST_ACOUCHBASE_API" = "true" ]; then
-                PYTEST_CMD="python -m $PYTEST_ACB_CMD $PYTEST_ACB_OPTS"
+                PYTEST_CMD="$PYTEST_ACB_CMD $PYTEST_ACB_OPTS"
                 echo "Running acouchbase tests: $PYTEST_CMD"
                 eval "$PYTEST_CMD"
             fi
             TEST_COUCHBASE_API=${{ fromJson(needs.setup.outputs.stage_matrices).test_integration.test_couchbase_api }}
             if [ "$TEST_COUCHBASE_API" = "true" ]; then
-                PYTEST_CMD="python -m $PYTEST_CB_CMD $PYTEST_CB_OPTS"
+                PYTEST_CMD="$PYTEST_CB_CMD $PYTEST_CB_OPTS"
                 echo "Running couchbase tests: $PYTEST_CMD"
                 eval "$PYTEST_CMD"
             fi
