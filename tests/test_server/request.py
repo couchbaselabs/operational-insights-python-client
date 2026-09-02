@@ -119,8 +119,10 @@ class ServerTimeoutRequest:
 @dataclass
 class ServerHttp503Request:
     error_type: ErrorType
-    analytics_error: Optional[bool] = False
+    operational_insights_error: Optional[bool] = False
 
     @classmethod
     def from_json(cls, json_data: Dict[str, Any]) -> ServerHttp503Request:
-        return cls(error_type=ErrorType.Http503, analytics_error=json_data.get('analytics_error', False))
+        return cls(
+            error_type=ErrorType.Http503, operational_insights_error=json_data.get('operational_insights_error', False)
+        )

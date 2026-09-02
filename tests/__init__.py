@@ -18,7 +18,7 @@ import logging
 from enum import Enum
 from typing import AsyncGenerator, Generator, Optional, TypeVar
 
-TEST_LOGGER_NAME = 'couchbase_analytics_test'
+TEST_LOGGER_NAME = 'couchbase_operational_insights_test'
 logger = logging.getLogger(TEST_LOGGER_NAME)
 
 T = TypeVar('T')
@@ -32,7 +32,7 @@ class SyncQueryType(Enum):
     CANCELLABLE = 'cancellable'
 
 
-class AnalyticsTestEnvironmentError(Exception):
+class OperationalInsightsTestEnvironmentError(Exception):
     """Raised when something with the test environment is incorrect."""
 
     def __init__(self, message: Optional[str] = None) -> None:

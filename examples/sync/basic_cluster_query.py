@@ -16,9 +16,9 @@
 
 from datetime import timedelta
 
-from couchbase_analytics.cluster import Cluster
-from couchbase_analytics.credential import Credential
-from couchbase_analytics.options import ClusterOptions, QueryOptions, TimeoutOptions
+from couchbase_operational_insights.cluster import Cluster
+from couchbase_operational_insights.credential import Credential
+from couchbase_operational_insights.options import ClusterOptions, QueryOptions, TimeoutOptions
 
 
 def main() -> None:

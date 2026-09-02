@@ -6,7 +6,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "couchbase-analytics"
+name = "couchbase-operational-insights"
 version = "1.0.0.dev1"
 dependencies = [
     "anyio~=4.9.0",
@@ -23,14 +23,14 @@ authors = [
 maintainers = [
     { name = "Couchbase, Inc.", email = "PythonPackage@couchbase.com" },
 ]
-description = "Python Client for Couchbase Analytics"
+description = "Python Client for Couchbase Operational Insights"
 readme = "README.md"
 keywords = [
     "couchbase",
     "nosql",
     "pycouchbase",
     "couchbase++",
-    "analytics",
+    "operational insights",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -55,8 +55,8 @@ file = "LICENSE"
 [project.urls]
 Homepage = "https://couchbase.com"
 Documentation = "https://docs.couchbase.com/python-analytics-sdk/current/hello-world/overview.html"
-"API Reference" = "https://docs.couchbase.com/sdk-api/analytics-python-client/"
-Repository = "https://github.com/couchbase/analytics-python-client"
+"API Reference" = "https://docs.couchbase.com/sdk-api/operational-insights-python-client/"
+Repository = "https://github.com/couchbase/operational-insights-python-client"
 "Bug Tracker" = "https://issues.couchbase.com/projects/PYCO/issues/"
 "Release Notes" = "https://docs.couchbase.com/python-analytics-sdk/current/project-docs/analytics-sdk-release-notes.html"
 
@@ -83,14 +83,14 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 include = [
-    "acouchbase_analytics",
-    "couchbase_analytics",
-    "acouchbase_analytics.*",
-    "couchbase_analytics.*",
+    "acouchbase_operational_insights",
+    "couchbase_operational_insights",
+    "acouchbase_operational_insights.*",
+    "couchbase_operational_insights.*",
 ]
 exclude = [
-    "acouchbase_analytics.tests",
-    "couchbase_analytics.tests",
+    "acouchbase_operational_insights.tests",
+    "couchbase_operational_insights.tests",
 ]
 
 [tool.pytest.ini_options]
@@ -98,8 +98,8 @@ minversion = "8.0"
 log_cli = true
 testpaths = [
     "tests",
-    "acouchbase_analytics/tests",
-    "couchbase_analytics/tests",
+    "acouchbase_operational_insights/tests",
+    "couchbase_operational_insights/tests",
 ]
 python_classes = [
     "*Tests",

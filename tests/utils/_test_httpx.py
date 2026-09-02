@@ -41,17 +41,17 @@ class TestHTTPConnection(HTTPConnection):
         timeouts = request.extensions.get('timeout', {})
         sni_hostname = request.extensions.get('sni_hostname', None)
         timeout = timeouts.get('connect', None)
-        # -- START PYCBAC TESTING --
+        # -- START PYCBOI TESTING --
         test_connect_timeout = timeouts.get('test_connect_timeout', None)
-        cb_logger.debug(f'PYCBAC OVERRIDE: connect timeout: {timeout}, test_connect_timeout: {test_connect_timeout}')
-        # -- END PYCBAC TESTING --
+        cb_logger.debug(f'PYCBOI OVERRIDE: connect timeout: {timeout}, test_connect_timeout: {test_connect_timeout}')
+        # -- END PYCBOI TESTING --
 
         retries_left = self._retries
         delays = exponential_backoff(factor=RETRIES_BACKOFF_FACTOR)
 
-        # -- START PYCBAC TESTING --
+        # -- START PYCBOI TESTING --
         deadline = time.monotonic() + timeout
-        # -- END PYCBAC TESTING --
+        # -- END PYCBOI TESTING --
         while True:
             try:
                 if self._uds is None:
@@ -63,13 +63,13 @@ class TestHTTPConnection(HTTPConnection):
                         'socket_options': self._socket_options,
                     }
                     with Trace('connect_tcp', logger, request, kwargs) as trace:
-                        # -- START PYCBAC TESTING --
+                        # -- START PYCBOI TESTING --
                         if test_connect_timeout is not None:
                             time.sleep(test_connect_timeout)
                         current_time = time.monotonic()
                         if current_time > deadline:
                             raise ConnectTimeout(f'Connection timed out after {timeout} seconds')
-                        # -- END PYCBAC TESTING --
+                        # -- END PYCBOI TESTING --
                         stream = self._network_backend.connect_tcp(**kwargs)
                         trace.return_value = stream
                 else:
@@ -177,17 +177,17 @@ class TestConnectionPool(ConnectionPool):
 
         timeouts = request.extensions.get('timeout', {})
         timeout = timeouts.get('pool', None)
-        # -- START PYCBAC TESTING --
+        # -- START PYCBOI TESTING --
         test_pool_timeout = timeouts.get('test_pool_timeout', None)
-        cb_logger.debug(f'PYCBAC OVERRIDE: pool timeout: {timeout}, test_pool_timeout: {test_pool_timeout}')
-        # -- END PYCBAC TESTING --
+        cb_logger.debug(f'PYCBOI OVERRIDE: pool timeout: {timeout}, test_pool_timeout: {test_pool_timeout}')
+        # -- END PYCBOI TESTING --
 
         with self._optional_thread_lock:
             # Add the incoming request to our request queue.
             pool_request = PoolRequest(request)
             self._requests.append(pool_request)
 
-        # PYCBAC Addition: track the deadline
+        # PYCBOI Addition: track the deadline
         deadline = time.monotonic() + timeout
         try:
             while True:
@@ -197,16 +197,16 @@ class TestConnectionPool(ConnectionPool):
                     closing = self._assign_requests_to_connections()
                 self._close_connections(closing)
 
-                # -- START PYCBAC TESTING --
+                # -- START PYCBOI TESTING --
                 if test_pool_timeout is not None:
                     time.sleep(test_pool_timeout)
                 current_time = time.monotonic()
                 if current_time > deadline:
                     raise PoolTimeout(f'Connection timed out after {timeout} seconds')
-                # -- END PYCBAC TESTING --
+                # -- END PYCBOI TESTING --
                 # Wait until this request has an assigned connection.
                 connection = pool_request.wait_for_connection(timeout=timeout)
-                # PYCBAC Addition: We _always_ set the request timeouts, so no need to validate keys
+                # PYCBOI Addition: We _always_ set the request timeouts, so no need to validate keys
                 connect_timeout = round(deadline - time.monotonic(), 6)  # round to microseconds
                 pool_request.request.extensions['timeout']['connect'] = connect_timeout
 
@@ -219,7 +219,7 @@ class TestConnectionPool(ConnectionPool):
                     #
                     # In this case we clear the connection and try again.
                     pool_request.clear_connection()
-                    # PYCBAC Addition: We update the timeout for the next attempt
+                    # PYCBOI Addition: We update the timeout for the next attempt
                     timeout = round(deadline - time.monotonic(), 6)  # round to microseconds
                 else:
                     break  # pragma: nocover
@@ -275,7 +275,7 @@ def http_transport_init_override(self, *args, **kwargs) -> None:  # type: ignore
 
 
 HTTPTransport.__init__ = http_transport_init_override  # type: ignore
-HTTPTransport.PYCBAC_TESTING = True
+HTTPTransport.PYCBOI_TESTING = True
 
 TestHTTPTransport = HTTPTransport
 

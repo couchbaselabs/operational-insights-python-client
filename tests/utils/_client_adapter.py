@@ -18,15 +18,20 @@ from typing import Dict, Optional, Union
 
 from httpx import URL, Response
 
-from couchbase_analytics.protocol._core.client_adapter import _ClientAdapter
-from couchbase_analytics.protocol._core.request import CancelRequest, HttpRequest, QueryRequest, StartQueryRequest
+from couchbase_operational_insights.protocol._core.client_adapter import _ClientAdapter
+from couchbase_operational_insights.protocol._core.request import (
+    CancelRequest,
+    HttpRequest,
+    QueryRequest,
+    StartQueryRequest,
+)
 
 
 def client_adapter_init_override(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
-    if not hasattr(self, 'PYCBAC_TESTING'):
+    if not hasattr(self, 'PYCBOI_TESTING'):
         raise RuntimeError('This is a testing only adapter')
     self._http_transport_cls = kwargs.pop('http_transport_cls', None)
-    if self._http_transport_cls is not None and not hasattr(self._http_transport_cls, 'PYCBAC_TESTING'):
+    if self._http_transport_cls is not None and not hasattr(self._http_transport_cls, 'PYCBOI_TESTING'):
         raise RuntimeError('http_transport_cls must be a test transport')
     adapter: _ClientAdapter = kwargs.pop('adapter', None)
     adapter.close_client()
@@ -66,7 +71,7 @@ def send_request_override(
 
 
 def set_request_path(self: _ClientAdapter, path: str) -> None:
-    self.ANALYTICS_PATH = path
+    self.OPERATIONAL_INSIGHTS_PATH = path
 
 
 def update_request_json(self: _ClientAdapter, json: Dict[str, object]) -> None:
@@ -86,6 +91,6 @@ _TestClientAdapter.send_request = send_request_override  # type: ignore[method-a
 _TestClientAdapter.set_request_path = set_request_path
 _TestClientAdapter.update_request_json = update_request_json
 _TestClientAdapter.update_request_extensions = update_request_extensions
-_TestClientAdapter.PYCBAC_TESTING = True
+_TestClientAdapter.PYCBOI_TESTING = True
 
 __all__ = ['_TestClientAdapter']

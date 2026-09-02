@@ -43,26 +43,26 @@ else:
 import anyio
 import pytest
 
-from acouchbase_analytics.cluster import AsyncCluster
-from acouchbase_analytics.protocol._core.anyio_utils import get_time, sleep
-from acouchbase_analytics.protocol.query_handle import AsyncQueryHandle, AsyncQueryResultHandle
-from acouchbase_analytics.result import AsyncQueryResult
-from acouchbase_analytics.scope import AsyncScope
-from couchbase_analytics.cluster import Cluster
-from couchbase_analytics.common.query_handle import AsyncQueryHandle as _CoreAsyncQueryHandle
-from couchbase_analytics.common.query_handle import BlockingQueryHandle as _CoreBlockingQueryHandle
-from couchbase_analytics.common.request import RequestState
-from couchbase_analytics.credential import Credential
-from couchbase_analytics.options import ClusterOptions, SecurityOptions
-from couchbase_analytics.protocol.query_handle import BlockingQueryHandle, BlockingQueryResultHandle
-from couchbase_analytics.result import BlockingQueryResult
-from couchbase_analytics.scope import Scope
-from tests import TEST_LOGGER_NAME, AnalyticsTestEnvironmentError
+from acouchbase_operational_insights.cluster import AsyncCluster
+from acouchbase_operational_insights.protocol._core.anyio_utils import get_time, sleep
+from acouchbase_operational_insights.protocol.query_handle import AsyncQueryHandle, AsyncQueryResultHandle
+from acouchbase_operational_insights.result import AsyncQueryResult
+from acouchbase_operational_insights.scope import AsyncScope
+from couchbase_operational_insights.cluster import Cluster
+from couchbase_operational_insights.common.query_handle import AsyncQueryHandle as _CoreAsyncQueryHandle
+from couchbase_operational_insights.common.query_handle import BlockingQueryHandle as _CoreBlockingQueryHandle
+from couchbase_operational_insights.common.request import RequestState
+from couchbase_operational_insights.credential import Credential
+from couchbase_operational_insights.options import ClusterOptions, SecurityOptions
+from couchbase_operational_insights.protocol.query_handle import BlockingQueryHandle, BlockingQueryResultHandle
+from couchbase_operational_insights.result import BlockingQueryResult
+from couchbase_operational_insights.scope import Scope
+from tests import TEST_LOGGER_NAME, OperationalInsightsTestEnvironmentError
 from tests.test_server import ResultType
 from tests.utils._run_web_server import WebServerHandler
 
 if TYPE_CHECKING:
-    from tests.analytics_config import AnalyticsConfig
+    from tests.operational_insights_config import OperationalInsightsConfig
 
 
 TEST_AIRLINE_DATA_PATH = path.join(pathlib.Path(__file__).parent.parent, 'test_data', 'airline.json')
@@ -81,7 +81,7 @@ class TestEnvironmentOptionsKwargs(TypedDict, total=False):
 
 
 class TestEnvironment:
-    def __init__(self, config: AnalyticsConfig, **kwargs: Unpack[TestEnvironmentOptionsKwargs]) -> None:
+    def __init__(self, config: OperationalInsightsConfig, **kwargs: Unpack[TestEnvironmentOptionsKwargs]) -> None:
         self._config = config
         self._async_cluster = kwargs.pop('async_cluster', None)
         self._cluster = kwargs.pop('cluster', None)
@@ -94,7 +94,7 @@ class TestEnvironment:
         self._server_handler = kwargs.pop('server_handler', None)
 
     @property
-    def config(self) -> AnalyticsConfig:
+    def config(self) -> OperationalInsightsConfig:
         return self._config
 
     @property
@@ -154,19 +154,19 @@ class TestEnvironment:
 
 
 class BlockingTestEnvironment(TestEnvironment):
-    def __init__(self, config: AnalyticsConfig, **kwargs: Unpack[TestEnvironmentOptionsKwargs]) -> None:
+    def __init__(self, config: OperationalInsightsConfig, **kwargs: Unpack[TestEnvironmentOptionsKwargs]) -> None:
         super().__init__(config, **kwargs)
 
     @property
     def cluster(self) -> Cluster:
         if self._cluster is None:
-            raise AnalyticsTestEnvironmentError('No cluster available.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available.')
         return self._cluster
 
     @property
     def scope(self) -> Scope:
         if self._scope is None:
-            raise AnalyticsTestEnvironmentError('No scope available.')
+            raise OperationalInsightsTestEnvironmentError('No scope available.')
         return self._scope
 
     @property
@@ -202,22 +202,22 @@ class BlockingTestEnvironment(TestEnvironment):
         self, database_name: Optional[str] = None, scope_name: Optional[str] = None
     ) -> BlockingTestEnvironment:
         if self._cluster is None:
-            raise AnalyticsTestEnvironmentError('No cluster available.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available.')
         db_name = database_name if database_name is not None else self._database_name
         if db_name is None:
-            raise AnalyticsTestEnvironmentError('Cannot create scope without a database name.')
+            raise OperationalInsightsTestEnvironmentError('Cannot create scope without a database name.')
         scope_name = scope_name if scope_name is not None else self._scope_name
         if scope_name is None:
-            raise AnalyticsTestEnvironmentError('Cannot create scope without a scope name.')
+            raise OperationalInsightsTestEnvironmentError('Cannot create scope without a scope name.')
         self._scope = self._cluster.database(db_name).scope(scope_name)
         self._use_scope = True
         return self
 
     def enable_test_server(self) -> BlockingTestEnvironment:
         if self._server_handler is None:
-            raise AnalyticsTestEnvironmentError('No server handler provided, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No server handler provided, cannot enable test server.')
         if self._cluster is None or not hasattr(self._cluster, '_impl'):
-            raise AnalyticsTestEnvironmentError('No cluster available, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available, cannot enable test server.')
         from tests.utils._client_adapter import _TestClientAdapter
         from tests.utils._test_httpx import TestHTTPTransport
 
@@ -251,7 +251,9 @@ class BlockingTestEnvironment(TestEnvironment):
             try:
                 self.cluster.execute_query(statement)
             except Exception as ex:
-                raise AnalyticsTestEnvironmentError(f'Unable to execute statement={statement}. Error: {ex}') from None
+                raise OperationalInsightsTestEnvironmentError(
+                    f'Unable to execute statement={statement}. Error: {ex}'
+                ) from None
 
         json_data = self.load_collection_data_from_file(TEST_AIRLINE_DATA_PATH)
         docs = []
@@ -269,13 +271,13 @@ class BlockingTestEnvironment(TestEnvironment):
         try:
             self.cluster.execute_query(statement)
         except Exception as ex:
-            raise AnalyticsTestEnvironmentError(f'Unable to load collection data. Error: {ex}') from None
+            raise OperationalInsightsTestEnvironmentError(f'Unable to load collection data. Error: {ex}') from None
 
     def set_url_path(self, url_path: str) -> None:
         if self._server_handler is None:
-            raise AnalyticsTestEnvironmentError('No server handler provided, cannot set URL path.')
+            raise OperationalInsightsTestEnvironmentError('No server handler provided, cannot set URL path.')
         if self._cluster is None or not hasattr(self._cluster, '_impl'):
-            raise AnalyticsTestEnvironmentError('No cluster available, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available, cannot enable test server.')
         self._cluster._impl._client_adapter.set_request_path(url_path)
 
     def teardown(self) -> None:
@@ -296,20 +298,24 @@ class BlockingTestEnvironment(TestEnvironment):
             try:
                 self.cluster.execute_query(statement)
             except Exception as ex:
-                raise AnalyticsTestEnvironmentError(f'Unable to execute statement={statement}. Error: {ex}') from None
+                raise OperationalInsightsTestEnvironmentError(
+                    f'Unable to execute statement={statement}. Error: {ex}'
+                ) from None
 
     def update_request_extensions(self, extensions: Dict[str, object]) -> None:
         if self._server_handler is None:
-            raise AnalyticsTestEnvironmentError('No server handler provided, cannot update request extensions.')
+            raise OperationalInsightsTestEnvironmentError(
+                'No server handler provided, cannot update request extensions.'
+            )
         if self._cluster is None or not hasattr(self._cluster, '_impl'):
-            raise AnalyticsTestEnvironmentError('No cluster available, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available, cannot enable test server.')
         self._cluster._impl._client_adapter.update_request_extensions(extensions)
 
     def update_request_json(self, json: Dict[str, object]) -> None:
         if self._server_handler is None:
-            raise AnalyticsTestEnvironmentError('No server handler provided, cannot update request JSON.')
+            raise OperationalInsightsTestEnvironmentError('No server handler provided, cannot update request JSON.')
         if self._cluster is None or not hasattr(self._cluster, '_impl'):
-            raise AnalyticsTestEnvironmentError('No cluster available, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available, cannot enable test server.')
         self._cluster._impl._client_adapter.update_request_json(json)
 
     def warmup_test_server(self) -> None:
@@ -326,7 +332,7 @@ class BlockingTestEnvironment(TestEnvironment):
                 if len(rows) == row_count:
                     break
             except Exception as ex:
-                exc = AnalyticsTestEnvironmentError(f'Unable to execute statement={statement}. Error: {ex}')
+                exc = OperationalInsightsTestEnvironmentError(f'Unable to execute statement={statement}. Error: {ex}')
         if exc is not None:
             raise exc
 
@@ -370,10 +376,10 @@ class BlockingTestEnvironment(TestEnvironment):
 
     @classmethod
     def get_environment(
-        cls, config: AnalyticsConfig, server_handler: Optional[WebServerHandler] = None
+        cls, config: OperationalInsightsConfig, server_handler: Optional[WebServerHandler] = None
     ) -> BlockingTestEnvironment:
         if config is None:
-            raise AnalyticsTestEnvironmentError('No test config provided.')
+            raise OperationalInsightsTestEnvironmentError('No test config provided.')
 
         env_opts: TestEnvironmentOptionsKwargs = {}
         if server_handler is not None:
@@ -385,7 +391,7 @@ class BlockingTestEnvironment(TestEnvironment):
         cred = Credential.from_username_and_password(username, pw)
         sec_opts: Optional[SecurityOptions] = None
         if config.nonprod is True:
-            from couchbase_analytics.common._core.certificates import _Certificates
+            from couchbase_operational_insights.common._core.certificates import _Certificates
 
             sec_opts = SecurityOptions.trust_only_certificates(_Certificates.get_nonprod_certificates())
 
@@ -431,14 +437,14 @@ class BlockingTestEnvironment(TestEnvironment):
 
 
 class AsyncTestEnvironment(TestEnvironment):
-    def __init__(self, config: AnalyticsConfig, **kwargs: Unpack[TestEnvironmentOptionsKwargs]) -> None:
+    def __init__(self, config: OperationalInsightsConfig, **kwargs: Unpack[TestEnvironmentOptionsKwargs]) -> None:
         self._backend = kwargs.pop('backend', None)
         super().__init__(config, **kwargs)
 
     @property
     def cluster(self) -> AsyncCluster:
         if self._async_cluster is None:
-            raise AnalyticsTestEnvironmentError('No async cluster available.')
+            raise OperationalInsightsTestEnvironmentError('No async cluster available.')
         return self._async_cluster
 
     @property
@@ -450,7 +456,7 @@ class AsyncTestEnvironment(TestEnvironment):
     @property
     def scope(self) -> AsyncScope:
         if self._async_scope is None:
-            raise AnalyticsTestEnvironmentError('No scope available.')
+            raise OperationalInsightsTestEnvironmentError('No scope available.')
         return self._async_scope
 
     async def assert_rows(self, result: AsyncQueryResult, expected_count: int) -> None:
@@ -479,22 +485,22 @@ class AsyncTestEnvironment(TestEnvironment):
         self, database_name: Optional[str] = None, scope_name: Optional[str] = None
     ) -> AsyncTestEnvironment:
         if self._async_cluster is None:
-            raise AnalyticsTestEnvironmentError('No cluster available.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available.')
         db_name = database_name if database_name is not None else self._database_name
         if db_name is None:
-            raise AnalyticsTestEnvironmentError('Cannot create scope without a database name.')
+            raise OperationalInsightsTestEnvironmentError('Cannot create scope without a database name.')
         scope_name = scope_name if scope_name is not None else self._scope_name
         if scope_name is None:
-            raise AnalyticsTestEnvironmentError('Cannot create scope without a scope name.')
+            raise OperationalInsightsTestEnvironmentError('Cannot create scope without a scope name.')
         self._async_scope = self._async_cluster.database(db_name).scope(scope_name)
         self._use_scope = True
         return self
 
     async def enable_test_server(self) -> AsyncTestEnvironment:
         if self._server_handler is None:
-            raise AnalyticsTestEnvironmentError('No server handler provided, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No server handler provided, cannot enable test server.')
         if self._async_cluster is None or not hasattr(self._async_cluster, '_impl'):
-            raise AnalyticsTestEnvironmentError('No cluster available, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available, cannot enable test server.')
         from tests.utils._async_client_adapter import _TestAsyncClientAdapter
         from tests.utils._test_async_httpx import TestAsyncHTTPTransport
 
@@ -530,7 +536,9 @@ class AsyncTestEnvironment(TestEnvironment):
             try:
                 await self.cluster.execute_query(statement)
             except Exception as ex:
-                raise AnalyticsTestEnvironmentError(f'Unable to execute statement={statement}. Error: {ex}') from None
+                raise OperationalInsightsTestEnvironmentError(
+                    f'Unable to execute statement={statement}. Error: {ex}'
+                ) from None
 
         json_data = self.load_collection_data_from_file(TEST_AIRLINE_DATA_PATH)
         docs = []
@@ -548,13 +556,13 @@ class AsyncTestEnvironment(TestEnvironment):
         try:
             await self.cluster.execute_query(statement)
         except Exception as ex:
-            raise AnalyticsTestEnvironmentError(f'Unable to load collection data. Error: {ex}') from None
+            raise OperationalInsightsTestEnvironmentError(f'Unable to load collection data. Error: {ex}') from None
 
     def set_url_path(self, url_path: str) -> None:
         if self._server_handler is None:
-            raise AnalyticsTestEnvironmentError('No server handler provided, cannot set URL path.')
+            raise OperationalInsightsTestEnvironmentError('No server handler provided, cannot set URL path.')
         if self._async_cluster is None or not hasattr(self._async_cluster, '_impl'):
-            raise AnalyticsTestEnvironmentError('No cluster available, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available, cannot enable test server.')
         self._async_cluster._impl._client_adapter.set_request_path(url_path)
 
     async def sleep(self, delay: float) -> None:
@@ -578,20 +586,24 @@ class AsyncTestEnvironment(TestEnvironment):
             try:
                 await self.cluster.execute_query(statement)
             except Exception as ex:
-                raise AnalyticsTestEnvironmentError(f'Unable to execute statement={statement}. Error: {ex}') from None
+                raise OperationalInsightsTestEnvironmentError(
+                    f'Unable to execute statement={statement}. Error: {ex}'
+                ) from None
 
     def update_request_extensions(self, extensions: Dict[str, object]) -> None:
         if self._server_handler is None:
-            raise AnalyticsTestEnvironmentError('No server handler provided, cannot update request extensions.')
+            raise OperationalInsightsTestEnvironmentError(
+                'No server handler provided, cannot update request extensions.'
+            )
         if self._async_cluster is None or not hasattr(self._async_cluster, '_impl'):
-            raise AnalyticsTestEnvironmentError('No cluster available, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available, cannot enable test server.')
         self._async_cluster._impl._client_adapter.update_request_extensions(extensions)
 
     def update_request_json(self, json: Dict[str, object]) -> None:
         if self._server_handler is None:
-            raise AnalyticsTestEnvironmentError('No server handler provided, cannot update request JSON.')
+            raise OperationalInsightsTestEnvironmentError('No server handler provided, cannot update request JSON.')
         if self._async_cluster is None or not hasattr(self._async_cluster, '_impl'):
-            raise AnalyticsTestEnvironmentError('No cluster available, cannot enable test server.')
+            raise OperationalInsightsTestEnvironmentError('No cluster available, cannot enable test server.')
         self._async_cluster._impl._client_adapter.update_request_json(json)
 
     async def wait_for_query_results(
@@ -647,16 +659,19 @@ class AsyncTestEnvironment(TestEnvironment):
                 if len(rows) == row_count:
                     break
             except Exception as ex:
-                exc = AnalyticsTestEnvironmentError(f'Unable to execute statement={statement}. Error: {ex}')
+                exc = OperationalInsightsTestEnvironmentError(f'Unable to execute statement={statement}. Error: {ex}')
         if exc is not None:
             raise exc
 
     @classmethod
     def get_environment(
-        cls, config: AnalyticsConfig, server_handler: Optional[WebServerHandler] = None, backend: Optional[str] = None
+        cls,
+        config: OperationalInsightsConfig,
+        server_handler: Optional[WebServerHandler] = None,
+        backend: Optional[str] = None,
     ) -> AsyncTestEnvironment:
         if config is None:
-            raise AnalyticsTestEnvironmentError('No test config provided.')
+            raise OperationalInsightsTestEnvironmentError('No test config provided.')
 
         env_opts: TestEnvironmentOptionsKwargs = {}
         if server_handler is not None:
@@ -670,7 +685,7 @@ class AsyncTestEnvironment(TestEnvironment):
         cred = Credential.from_username_and_password(username, pw)
         sec_opts: Optional[SecurityOptions] = None
         if config.nonprod is True:
-            from couchbase_analytics.common._core.certificates import _Certificates
+            from couchbase_operational_insights.common._core.certificates import _Certificates
 
             sec_opts = SecurityOptions.trust_only_certificates(_Certificates.get_nonprod_certificates())
 
@@ -716,28 +731,34 @@ class AsyncTestEnvironment(TestEnvironment):
 
 
 @pytest.fixture(scope='class', name='sync_test_env')
-def base_test_environment(analytics_config: AnalyticsConfig) -> BlockingTestEnvironment:
+def base_test_environment(operational_insights_config: OperationalInsightsConfig) -> BlockingTestEnvironment:
     logger.info('Creating sync test environment')
-    return BlockingTestEnvironment.get_environment(analytics_config)
+    return BlockingTestEnvironment.get_environment(operational_insights_config)
 
 
 @pytest.fixture(scope='class', name='sync_test_env_with_server')
-def base_test_environment_with_server(analytics_config: AnalyticsConfig) -> BlockingTestEnvironment:
+def base_test_environment_with_server(
+    operational_insights_config: OperationalInsightsConfig,
+) -> BlockingTestEnvironment:
     logger.info('Creating sync test environment w/ test server')
     server_handler = WebServerHandler()
-    return BlockingTestEnvironment.get_environment(analytics_config, server_handler=server_handler)
+    return BlockingTestEnvironment.get_environment(operational_insights_config, server_handler=server_handler)
 
 
 @pytest.fixture(scope='class', name='async_test_env')
-def base_async_test_environment(analytics_config: AnalyticsConfig, anyio_backend: str) -> AsyncTestEnvironment:
+def base_async_test_environment(
+    operational_insights_config: OperationalInsightsConfig, anyio_backend: str
+) -> AsyncTestEnvironment:
     logger.info('Creating async test environment')
-    return AsyncTestEnvironment.get_environment(analytics_config, backend=anyio_backend)
+    return AsyncTestEnvironment.get_environment(operational_insights_config, backend=anyio_backend)
 
 
 @pytest.fixture(scope='class', name='async_test_env_with_server')
 def base_async_test_environment_with_server(
-    analytics_config: AnalyticsConfig, anyio_backend: str
+    operational_insights_config: OperationalInsightsConfig, anyio_backend: str
 ) -> AsyncTestEnvironment:
     logger.info('Creating async test environment w/ test server')
     server_handler = WebServerHandler()
-    return AsyncTestEnvironment.get_environment(analytics_config, server_handler=server_handler, backend=anyio_backend)
+    return AsyncTestEnvironment.get_environment(
+        operational_insights_config, server_handler=server_handler, backend=anyio_backend
+    )

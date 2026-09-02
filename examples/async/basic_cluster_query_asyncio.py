@@ -17,9 +17,9 @@
 import asyncio
 from datetime import timedelta
 
-from acouchbase_analytics.cluster import AsyncCluster
-from acouchbase_analytics.credential import Credential
-from acouchbase_analytics.options import ClusterOptions, QueryOptions, TimeoutOptions
+from acouchbase_operational_insights.cluster import AsyncCluster
+from acouchbase_operational_insights.credential import Credential
+from acouchbase_operational_insights.options import ClusterOptions, QueryOptions, TimeoutOptions
 
 
 async def main() -> None:

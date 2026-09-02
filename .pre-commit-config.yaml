@@ -25,10 +25,10 @@ repos:
       - id: bandit
         exclude: |
           (?x)^(
-              acouchbase_analytics/tests/|
-              couchbase_analytics/tests/|
+              acouchbase_operational_insights/tests/|
+              couchbase_operational_insights/tests/|
               tests/|
-              couchbase_analytics_version.py
+              couchbase_operational_insights_version.py
           )
         args:
           [

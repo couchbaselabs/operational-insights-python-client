@@ -530,7 +530,7 @@ wheels = [
 ]
 
 [[package]]
-name = "couchbase-analytics"
+name = "couchbase-operational-insights"
 version = "1.0.0.dev1"
 source = { editable = "." }
 dependencies = [

@@ -161,7 +161,7 @@ cython_debug/
 
 # Distribution / packaging
 build/
-couchbase_analytics/_version.py
+couchbase_operational_insights/_version.py
 
 # Sphinx
 docs/_build/

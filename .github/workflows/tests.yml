@@ -256,7 +256,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           retention-days: 1
-          name: pycbac-test-setup
+          name: pycboi-test-setup
           path: |
             pycbac_test/
 
@@ -348,14 +348,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           retention-days: 1
-          name: pycbac-artifact-sdist
+          name: pycboi-artifact-sdist
           path: |
             ./dist/*.tar.gz
       - name: Upload Python wheel
         uses: actions/upload-artifact@v4
         with:
           retention-days: 1
-          name: pycbac-artifact-wheel
+          name: pycboi-artifact-wheel
           path: |
             ./dist/*.whl
 
@@ -377,19 +377,19 @@ jobs:
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_sdist_install }}
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-sdist
-          path: pycbac
+          name: pycboi-artifact-sdist
+          path: pycboi
       - name: Download wheel
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_wheel_install }}
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-wheel
-          path: pycbac
+          name: pycboi-artifact-wheel
+          path: pycboi
       - name: Download test setup
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-test-setup
-          path: pycbac
+          name: pycboi-test-setup
+          path: pycboi
       - name: Cache Docker image
         uses: actions/cache@v4
         with:
@@ -413,10 +413,10 @@ jobs:
           image: python:${{ matrix.python-version }}-${{ env.CBCI_DEFAULT_ALPINE_CONTAINER }}
           options: >-
             --platform linux/amd64
-            -v ${{ github.workspace }}/pycbac:/pycbac
+            -v ${{ github.workspace }}/pycboi:/pycboi
           run: |
             python -m pip install --upgrade pip setuptools wheel
-            cd pycbac
+            cd pycboi
             ls -alh
             python -m pip install -r requirements-test.txt
             SDIST_NAME=${{ needs.sdist-wheel.outputs.sdist_name }}
@@ -446,10 +446,10 @@ jobs:
           image: python:${{ matrix.python-version }}-${{ env.CBCI_DEFAULT_ALPINE_CONTAINER }}
           options: >-
             --platform linux/amd64
-            -v ${{ github.workspace }}/pycbac:/pycbac
+            -v ${{ github.workspace }}/pycboi:/pycboi
           run: |
             python -m pip install --upgrade pip setuptools wheel
-            cd pycbac
+            cd pycboi
             ls -alh
             python -m pip install -r requirements-test.txt
             WHEEL_NAME=${{ needs.sdist-wheel.outputs.wheel_name }}
@@ -491,19 +491,19 @@ jobs:
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_sdist_install }}
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-sdist
-          path: pycbac
+          name: pycboi-artifact-sdist
+          path: pycboi
       - name: Download wheel
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_wheel_install }}
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-wheel
-          path: pycbac
+          name: pycboi-artifact-wheel
+          path: pycboi
       - name: Download test setup
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-test-setup
-          path: pycbac
+          name: pycboi-test-setup
+          path: pycboi
       - name: Run unit tests via sdist install
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_sdist_install }}
         env:
@@ -513,7 +513,7 @@ jobs:
           PYTEST_CB_OPTS: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.couchbase_opts }}
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          cd pycbac
+          cd pycboi
           ls -alh
           python -m pip install -r requirements-test.txt
           SDIST_NAME=${{ needs.sdist-wheel.outputs.sdist_name }}
@@ -532,7 +532,7 @@ jobs:
               echo "Running couchbase tests: $PYTEST_CMD"
               eval "$PYTEST_CMD"
           fi
-          python -m pip uninstall couchbase-analytics -y
+          python -m pip uninstall couchbase-operational-insights -y
       - name: Run unit tests via wheel install
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_wheel_install }}
         env:
@@ -542,7 +542,7 @@ jobs:
           PYTEST_CB_OPTS: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.couchbase_opts }}
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          cd pycbac
+          cd pycboi
           ls -alh
           python -m pip install -r requirements-test.txt
           WHEEL_NAME=${{ needs.sdist-wheel.outputs.wheel_name }}
@@ -580,19 +580,19 @@ jobs:
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_sdist_install }}
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-sdist
-          path: pycbac
+          name: pycboi-artifact-sdist
+          path: pycboi
       - name: Download wheel
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_wheel_install }}
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-wheel
-          path: pycbac
+          name: pycboi-artifact-wheel
+          path: pycboi
       - name: Download test setup
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-test-setup
-          path: pycbac
+          name: pycboi-test-setup
+          path: pycboi
       - name: Run unit tests via sdist install
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_sdist_install }}
         env:
@@ -602,7 +602,7 @@ jobs:
           PYTEST_CB_OPTS: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.couchbase_opts }}
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          cd pycbac
+          cd pycboi
           ls -alh
           python -m pip install -r requirements-test.txt
           SDIST_NAME=${{ needs.sdist-wheel.outputs.sdist_name }}
@@ -621,7 +621,7 @@ jobs:
               echo "Running couchbase tests: $PYTEST_CMD"
               eval "$PYTEST_CMD"
           fi
-          python -m pip uninstall couchbase-analytics -y
+          python -m pip uninstall couchbase-operational-insights -y
       - name: Run unit tests via wheel install
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_wheel_install }}
         env:
@@ -631,7 +631,7 @@ jobs:
           PYTEST_CB_OPTS: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.couchbase_opts }}
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          cd pycbac
+          cd pycboi
           ls -alh
           python -m pip install -r requirements-test.txt
           WHEEL_NAME=${{ needs.sdist-wheel.outputs.wheel_name }}
@@ -669,19 +669,19 @@ jobs:
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_sdist_install }}
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-sdist
-          path: pycbac
+          name: pycboi-artifact-sdist
+          path: pycboi
       - name: Download wheel
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_wheel_install }}
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-wheel
-          path: pycbac
+          name: pycboi-artifact-wheel
+          path: pycboi
       - name: Download test setup
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-test-setup
-          path: pycbac
+          name: pycboi-test-setup
+          path: pycboi
       - name: Run unit tests via sdist install
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_sdist_install }}
         env:
@@ -691,7 +691,7 @@ jobs:
           PYTEST_CB_OPTS: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.couchbase_opts }}
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          cd pycbac
+          cd pycboi
           dir
           python -m pip install -r requirements-test.txt
           $SDIST_NAME="${{ needs.sdist-wheel.outputs.sdist_name }}" + ".tar.gz"
@@ -710,7 +710,7 @@ jobs:
               echo "Running couchbase tests: $PYTEST_CMD"
               iex $PYTEST_CMD
           }
-          python -m pip uninstall couchbase-analytics -y
+          python -m pip uninstall couchbase-operational-insights -y
       - name: Run unit tests via wheel install
         if: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.test_wheel_install }}
         env:
@@ -720,7 +720,7 @@ jobs:
           PYTEST_CB_OPTS: ${{ fromJson(needs.setup.outputs.stage_matrices).test_unit.pytest.couchbase_opts }}
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          cd pycbac
+          cd pycboi
           dir
           python -m pip install -r requirements-test.txt
           $WHEEL_NAME="${{ needs.sdist-wheel.outputs.wheel_name }}"
@@ -784,16 +784,16 @@ jobs:
       - name: Download wheel
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-artifact-wheel
-          path: pycbac
+          name: pycboi-artifact-wheel
+          path: pycboi
       - name: Download test setup
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-test-setup
-          path: pycbac
+          name: pycboi-test-setup
+          path: pycboi
       - name: Start couchbase cluster
         run: |
-          cd pycbac
+          cd pycboi
           cat cluster_def.yaml
           CBDC_ID=$(cbdinocluster -v alloc --def-file=cluster_def.yaml)
           CBDC_CONNSTR=$(cbdinocluster -v connstr --analytics $CBDC_ID)
@@ -808,7 +808,7 @@ jobs:
           PYCBAC_FQDN: 'travel-sample.inventory.airline'
           CBCONNSTR: ${{ env.CBDC_CONNSTR }}
         run: |
-          ./ci_scripts/gha.sh build_test_config_ini pycbac/tests
+          ./ci_scripts/gha.sh build_test_config_ini pycboi/tests
       - name: Run tests
         timeout-minutes: 30
         env:
@@ -818,7 +818,7 @@ jobs:
           PYTEST_CB_OPTS: ${{ fromJson(needs.setup.outputs.stage_matrices).test_integration.pytest.couchbase_opts }}
         run: |
             python -m pip install --upgrade pip setuptools wheel
-            cd pycbac
+            cd pycboi
             ls -alh
             cat tests/test_config.ini
             python -m pip install -r requirements-test.txt

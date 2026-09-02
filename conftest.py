@@ -19,44 +19,44 @@ from typing import List
 import pytest
 
 pytest_plugins = [
-    'tests.analytics_config',
+    'tests.operational_insights_config',
     'tests.environments.base_environment',
     'tests.environments.simple_environment',
 ]
 
 _UNIT_TESTS = [
-    'acouchbase_analytics/tests/connection_t.py::ConnectionTests',
-    'acouchbase_analytics/tests/credential_t.py::CredentialTests',
-    'acouchbase_analytics/tests/json_parsing_t.py::JsonParsingTests',
-    'acouchbase_analytics/tests/options_t.py::ClusterOptionsTests',
-    'acouchbase_analytics/tests/query_options_t.py::ClusterQueryOptionsTests',
-    'acouchbase_analytics/tests/query_options_t.py::ScopeQueryOptionsTests',
-    'acouchbase_analytics/tests/test_server_t.py::ClusterTestServerTests',
-    'acouchbase_analytics/tests/test_server_t.py::ScopeTestServerTests',
-    'couchbase_analytics/tests/connection_t.py::ConnectionTests',
-    'couchbase_analytics/tests/credential_t.py::CredentialTests',
-    'couchbase_analytics/tests/duration_parsing_t.py::DurationParsingTests',
-    'couchbase_analytics/tests/json_parsing_t.py::JsonParsingTests',
-    'couchbase_analytics/tests/options_t.py::ClusterOptionsTests',
-    'couchbase_analytics/tests/query_options_t.py::ClusterQueryOptionsTests',
-    'couchbase_analytics/tests/query_options_t.py::ScopeQueryOptionsTests',
-    'couchbase_analytics/tests/start_query_options_t.py::ClusterStartQueryOptionsTests',
-    'couchbase_analytics/tests/start_query_options_t.py::ScopeStartQueryOptionsTests',
-    'couchbase_analytics/tests/test_server_t.py::ClusterTestServerTests',
-    'couchbase_analytics/tests/test_server_t.py::ScopeTestServerTests',
+    'acouchbase_operational_insights/tests/connection_t.py::ConnectionTests',
+    'acouchbase_operational_insights/tests/credential_t.py::CredentialTests',
+    'acouchbase_operational_insights/tests/json_parsing_t.py::JsonParsingTests',
+    'acouchbase_operational_insights/tests/options_t.py::ClusterOptionsTests',
+    'acouchbase_operational_insights/tests/query_options_t.py::ClusterQueryOptionsTests',
+    'acouchbase_operational_insights/tests/query_options_t.py::ScopeQueryOptionsTests',
+    'acouchbase_operational_insights/tests/test_server_t.py::ClusterTestServerTests',
+    'acouchbase_operational_insights/tests/test_server_t.py::ScopeTestServerTests',
+    'couchbase_operational_insights/tests/connection_t.py::ConnectionTests',
+    'couchbase_operational_insights/tests/credential_t.py::CredentialTests',
+    'couchbase_operational_insights/tests/duration_parsing_t.py::DurationParsingTests',
+    'couchbase_operational_insights/tests/json_parsing_t.py::JsonParsingTests',
+    'couchbase_operational_insights/tests/options_t.py::ClusterOptionsTests',
+    'couchbase_operational_insights/tests/query_options_t.py::ClusterQueryOptionsTests',
+    'couchbase_operational_insights/tests/query_options_t.py::ScopeQueryOptionsTests',
+    'couchbase_operational_insights/tests/start_query_options_t.py::ClusterStartQueryOptionsTests',
+    'couchbase_operational_insights/tests/start_query_options_t.py::ScopeStartQueryOptionsTests',
+    'couchbase_operational_insights/tests/test_server_t.py::ClusterTestServerTests',
+    'couchbase_operational_insights/tests/test_server_t.py::ScopeTestServerTests',
 ]
 
 _INTEGRATRION_TESTS = [
-    'acouchbase_analytics/tests/connect_integration_t.py::ConnectTests',
-    'acouchbase_analytics/tests/query_integration_t.py::ClusterQueryTests',
-    'acouchbase_analytics/tests/query_integration_t.py::ScopeQueryTests',
-    'acouchbase_analytics/tests/start_query_integration_t.py::ClusterStartQueryTests',
-    'acouchbase_analytics/tests/start_query_integration_t.py::ScopeStartQueryTests',
-    'couchbase_analytics/tests/connect_integration_t.py::ConnectTests',
-    'couchbase_analytics/tests/query_integration_t.py::ClusterQueryTests',
-    'couchbase_analytics/tests/query_integration_t.py::ScopeQueryTests',
-    'couchbase_analytics/tests/start_query_integration_t.py::ClusterStartQueryTests',
-    'couchbase_analytics/tests/start_query_integration_t.py::ScopeStartQueryTests',
+    'acouchbase_operational_insights/tests/connect_integration_t.py::ConnectTests',
+    'acouchbase_operational_insights/tests/query_integration_t.py::ClusterQueryTests',
+    'acouchbase_operational_insights/tests/query_integration_t.py::ScopeQueryTests',
+    'acouchbase_operational_insights/tests/start_query_integration_t.py::ClusterStartQueryTests',
+    'acouchbase_operational_insights/tests/start_query_integration_t.py::ScopeStartQueryTests',
+    'couchbase_operational_insights/tests/connect_integration_t.py::ConnectTests',
+    'couchbase_operational_insights/tests/query_integration_t.py::ClusterQueryTests',
+    'couchbase_operational_insights/tests/query_integration_t.py::ScopeQueryTests',
+    'couchbase_operational_insights/tests/start_query_integration_t.py::ClusterStartQueryTests',
+    'couchbase_operational_insights/tests/start_query_integration_t.py::ScopeStartQueryTests',
 ]
 
 
@@ -71,9 +71,9 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
         item_details = item.nodeid.split('::')
 
         item_api = item_details[0].split('/')
-        if item_api[0] == 'couchbase_analytics':
+        if item_api[0] == 'couchbase_operational_insights':
             item.add_marker(pytest.mark.pycbac_couchbase)
-        elif item_api[0] == 'acouchbase_analytics':
+        elif item_api[0] == 'acouchbase_operational_insights':
             item.add_marker(pytest.mark.pycbac_acouchbase)
 
         test_class_path = '::'.join(item_details[:-1])

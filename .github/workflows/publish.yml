@@ -207,12 +207,12 @@ jobs:
         run: |
           git config user.name "Couchbase SDK Team"
           git config user.email "sdk_dev@couchbase.com"
-          git tag -a $PYCBAC_VERSION -m "Release of client version $PYCBAC_VERSION"
+          git tag -a $PYCBOI_VERSION -m "Release of client version $PYCBOI_VERSION"
         env:
-          PYCBAC_VERSION: ${{ fromJson(needs.publish-config.outputs.publish_config).publish_config.set_git_tag }}
+          PYCBOI_VERSION: ${{ fromJson(needs.publish-config.outputs.publish_config).publish_config.set_git_tag }}
       - name: Set SDK version
         run: |
-          python couchbase_analytics_version.py --mode make
+          python couchbase_operational_insights_version.py --mode make
       - name: Build API docs
         run: |
           python -m pip install --upgrade pip setuptools wheel
@@ -224,7 +224,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           retention-days: 1
-          name: pycbac-api-docs
+          name: pycboi-api-docs
           path: sphinx/
 
   publish-test-pypi:
@@ -236,14 +236,14 @@ jobs:
     runs-on: ${{ needs.default-linux-runner.outputs.runner }}
     environment:
       name: publish
-      url: https://pypi.org/p/couchbase-analytics
+      url: https://pypi.org/p/couchbase-operational-insights
     permissions:
       # This permission is required for pypi's "trusted publisher" feature
       id-token: write
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: pycbac-artifact-*
+          pattern: pycboi-artifact-*
           path: dist
           merge-multiple: true
           run-id: ${{ needs.set-tests-run-id.outputs.tests_run_id }}
@@ -294,14 +294,14 @@ jobs:
     runs-on: ${{ needs.default-linux-runner.outputs.runner }}
     environment:
       name: publish
-      url: https://pypi.org/p/couchbase-analytics
+      url: https://pypi.org/p/couchbase-operational-insights
     permissions:
       # This permission is required for pypi's "trusted publisher" feature
       id-token: write
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: pycbac-artifact-*
+          pattern: pycboi-artifact-*
           path: dist
           merge-multiple: true
           run-id: ${{ needs.set-tests-run-id.outputs.tests_run_id }}
@@ -355,7 +355,7 @@ jobs:
       - name: Download API docs
         uses: actions/download-artifact@v4
         with:
-          name: pycbac-api-docs
+          name: pycboi-api-docs
       - name: Setup AWS Credentials
         if: ${{ inputs.is_dry_run == false }}
         uses: aws-actions/configure-aws-credentials@v3
@@ -366,13 +366,13 @@ jobs:
         if: ${{ inputs.is_dry_run == false }}
         run: |
           ls -alh ./html
-          aws s3 cp ./html s3://docs.couchbase.com/sdk-api/analytics-python-client-$SDK_VERSION/ --recursive --acl public-read
+          aws s3 cp ./html s3://docs.couchbase.com/sdk-api/operational-insights-python-client-$SDK_VERSION/ --recursive --acl public-read
         env:
           SDK_VERSION: ${{ inputs.version }}
       - name: Upload API docs to S3 (dry run)
         if: ${{ inputs.is_dry_run }}
         run: |
           ls -alh ./html
-          echo "aws s3 cp ./html s3://docs.couchbase.com/sdk-api/analytics-python-client-$SDK_VERSION/ --recursive --acl public-read"
+          echo "aws s3 cp ./html s3://docs.couchbase.com/sdk-api/operational-insights-python-client-$SDK_VERSION/ --recursive --acl public-read"
         env:
           SDK_VERSION: ${{ inputs.version }}

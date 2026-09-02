@@ -20,21 +20,21 @@ import sys
 from setuptools import setup
 
 sys.path.append('.')
-import couchbase_analytics_version  # nopep8 # isort:skip # noqa: E402
+import couchbase_operational_insights_version  # nopep8 # isort:skip # noqa: E402
 
 try:
-    couchbase_analytics_version.gen_version()
-except couchbase_analytics_version.CantInvokeGit:
+    couchbase_operational_insights_version.gen_version()
+except couchbase_operational_insights_version.CantInvokeGit:
     pass
 
-PYCBAC_README = os.path.join(os.path.dirname(__file__), 'README.md')
-PYCBAC_VERSION = couchbase_analytics_version.get_version()
+PYCBOI_README = os.path.join(os.path.dirname(__file__), 'README.md')
+PYCBOI_VERSION = couchbase_operational_insights_version.get_version()
 
-print(f'Python Analytics SDK version: {PYCBAC_VERSION}')
+print(f'Python Operational Insights SDK version: {PYCBOI_VERSION}')
 
 setup(
-    name='couchbase-analytics',
-    version=PYCBAC_VERSION,
-    long_description=open(PYCBAC_README, 'r').read(),
+    name='couchbase-operational-insights',
+    version=PYCBOI_VERSION,
+    long_description=open(PYCBOI_README, 'r').read(),
     long_description_content_type='text/markdown',
 )

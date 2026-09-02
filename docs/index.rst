@@ -3,28 +3,28 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-=============================================================
-Welcome to the Couchbase Python Analytics SDK documentation!
-=============================================================
+=======================================================================
+Welcome to the Couchbase Python Operational Insights SDK documentation!
+=======================================================================
 
-Getting Started with the Python Analytics SDK
----------------------------------------------
+Getting Started with the Python Operational Insights SDK
+--------------------------------------------------------
 
-:doc:`using_the_analytics_sdk`
-   Useful information for getting started and using the Python Analytics SDK.
+:doc:`using_the_operational_insights_sdk`
+   Useful information for getting started and using the Python Operational Insights SDK.
 
 Synchronous API
 ---------------
 
-:doc:`couchbase_analytics_api/couchbase_analytics`
-   API reference for the couchbase_analytics API.
+:doc:`couchbase_operational_insights_api/couchbase_operational_insights`
+   API reference for the couchbase_operational_insights API.
 
 
 Asynchronous API
 -----------------
 
-:doc:`acouchbase_analytics_api/acouchbase_analytics`
-   API reference for the acouchbase_analytics API (asyncio).
+:doc:`acouchbase_operational_insights_api/acouchbase_operational_insights`
+   API reference for the acouchbase_operational_insights API (asyncio).
 
 
 Indices and tables
@@ -37,22 +37,22 @@ Indices and tables
 .. Hidden TOCs
 
 .. toctree::
-   :caption: Using the Couchbase Analytics Python SDK
+   :caption: Using the Couchbase Operational Insights Python SDK
    :maxdepth: 2
    :hidden:
 
-   using_the_analytics_sdk
+   using_the_operational_insights_sdk
 
 .. toctree::
    :caption: Synchronous API
    :maxdepth: 3
    :hidden:
 
-   couchbase_analytics_api/couchbase_analytics
+   couchbase_operational_insights_api/couchbase_operational_insights
 
 .. toctree::
    :caption: Asynchronous API
    :maxdepth: 3
    :hidden:
 
-   acouchbase_analytics_api/acouchbase_analytics
+   acouchbase_operational_insights_api/acouchbase_operational_insights

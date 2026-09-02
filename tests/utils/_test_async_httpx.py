@@ -40,10 +40,10 @@ class TestAsyncHTTPConnection(AsyncHTTPConnection):
         timeouts = request.extensions.get('timeout', {})
         sni_hostname = request.extensions.get('sni_hostname', None)
         timeout = timeouts.get('connect', None)
-        # -- START PYCBAC TESTING --
+        # -- START PYCBOI TESTING --
         test_connect_timeout = timeouts.get('test_connect_timeout', None)
-        cb_logger.debug(f'PYCBAC OVERRIDE: connect timeout: {timeout}, test_connect_timeout: {test_connect_timeout}')
-        # -- END PYCBAC TESTING --
+        cb_logger.debug(f'PYCBOI OVERRIDE: connect timeout: {timeout}, test_connect_timeout: {test_connect_timeout}')
+        # -- END PYCBOI TESTING --
 
         retries_left = self._retries
         delays = exponential_backoff(factor=RETRIES_BACKOFF_FACTOR)
@@ -166,10 +166,10 @@ class TestAsyncConnectionPool(AsyncConnectionPool):
 
         timeouts = request.extensions.get('timeout', {})
         timeout = timeouts.get('pool', None)
-        # -- START PYCBAC TESTING --
+        # -- START PYCBOI TESTING --
         test_pool_timeout = timeouts.get('test_pool_timeout', None)
-        cb_logger.debug(f'PYCBAC OVERRIDE: pool timeout: {timeout}, test_pool_timeout: {test_pool_timeout}')
-        # -- END PYCBAC TESTING --
+        cb_logger.debug(f'PYCBOI OVERRIDE: pool timeout: {timeout}, test_pool_timeout: {test_pool_timeout}')
+        # -- END PYCBOI TESTING --
 
         with self._optional_thread_lock:
             # Add the incoming request to our request queue.
@@ -250,7 +250,7 @@ def async_http_transport_init_override(self, *args, **kwargs) -> None:  # type: 
 
 
 AsyncHTTPTransport.__init__ = async_http_transport_init_override  # type: ignore
-AsyncHTTPTransport.PYCBAC_TESTING = True
+AsyncHTTPTransport.PYCBOI_TESTING = True
 
 TestAsyncHTTPTransport = AsyncHTTPTransport
 

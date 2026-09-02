@@ -93,7 +93,7 @@ class AsyncWebServer:
         return web.json_response(resp.to_json_repr())
 
     def _handle_http503_error_request(self, request: ServerHttp503Request) -> web.Response:
-        if request.analytics_error is False:
+        if request.operational_insights_error is False:
             return web.Response(status=503, text='Service Unavailable')
         start = perf_counter()
         resp = ServerResponse.create()

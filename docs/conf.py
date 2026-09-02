@@ -38,12 +38,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Couchbase Python Analytics Client Library'
+project = 'Couchbase Python Operational Insights Client Library'
 copyright = '2025, Couchbase, Inc.'
 author = 'Couchbase, Inc.'
 
 # from .. import couchbase_version
-import couchbase_analytics_version  # nopep8 # isort:skip # noqa: E402
+import couchbase_operational_insights_version  # nopep8 # isort:skip # noqa: E402
 
 try:
     from datetime import datetime
@@ -57,7 +57,7 @@ copyright = f'2016-{year}, Couchbase, Inc.'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-sdk_version = couchbase_analytics_version.get_version()
+sdk_version = couchbase_operational_insights_version.get_version()
 version = sdk_version
 release = sdk_version
 
@@ -81,7 +81,7 @@ extensions = [
 ]
 
 typehints_use_signature = True
-autodoc_type_aliases = {'JSONType': 'couchbase_analytics.common.JSONType'}
+autodoc_type_aliases = {'JSONType': 'couchbase_operational_insights.common.JSONType'}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -116,21 +116,21 @@ html_static_path = []
 extlinks = {
     'couchbase_dev_portal': ('https://developer.couchbase.com/%s', None),
     'couchbase_discord': ('https://discord.com/invite/sQ5qbPZuTh%s', None),
-    'analytics_sdk_github': ('https://github.com/couchbase/analytics-python-client%s', None),
-    'acouchbase_analytics_examples':
-        ('https://github.com/couchbase/analytics-python-client/tree/main/async/examples%s', None),
-    'couchbase_analytics_examples':
-        ('https://github.com/couchbase/analytics-python-client/tree/main/sync/examples%s', None),
-    'analytics_sdk_jira': ('https://issues.couchbase.com/projects/PYCO/issues/%s', None),
-    'analytics_sdk_docs': ('https://docs.couchbase.com/python-sdk/current/hello-world/overview.html%s', None),
-    'analytics_sdk_release_notes':
+    'operational_insights_sdk_github': ('https://github.com/couchbase/operational-insights-python-client%s', None),
+    'acouchbase_operational_insights_examples':
+        ('https://github.com/couchbase/operational-insights-python-client/tree/main/async/examples%s', None),
+    'couchbase_operational_insights_examples':
+        ('https://github.com/couchbase/operational-insights-python-client/tree/main/sync/examples%s', None),
+    'operational_insights_sdk_jira': ('https://issues.couchbase.com/projects/PYCO/issues/%s', None),
+    'operational_insights_sdk_docs': ('https://docs.couchbase.com/python-sdk/current/hello-world/overview.html%s', None),
+    'operational_insights_sdk_release_notes':
         ('https://docs.couchbase.com/python-sdk/current/project-docs/sdk-release-notes.html%s', None),
-    'analytics_sdk_compatibility':
+    'operational_insights_sdk_compatibility':
         ('https://docs.couchbase.com/python-sdk/current/project-docs/compatibility.html%s', None),
-    'analytics_sdk_forums': ('https://forums.couchbase.com/c/python-sdk/10%s', None),
-    'analytics_sdk_license': ('https://github.com/couchbase/analytics-python-client/blob/main/LICENSE%s', None),
-    'analytics_sdk_contribute':
-        ('https://github.com/couchbase/analytics-python-client/blob/main/CONTRIBUTING.md%s', None),
-    'analytics_sdk_version_compat':
+    'operational_insights_sdk_forums': ('https://forums.couchbase.com/c/python-sdk/10%s', None),
+    'operational_insights_sdk_license': ('https://github.com/couchbase/operational-insights-python-client/blob/main/LICENSE%s', None),
+    'operational_insights_sdk_contribute':
+        ('https://github.com/couchbase/operational-insights-python-client/blob/main/CONTRIBUTING.md%s', None),
+    'operational_insights_sdk_version_compat':
         ('https://docs.couchbase.com/python-sdk/current/project-docs/compatibility.html#python-version-compat%s', None),
 }

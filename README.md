@@ -1,9 +1,9 @@
-# Couchbase Python Analytics Client
-Python client for [Couchbase](https://couchbase.com) Analytics.
+# Couchbase Python Operational Insights Client
+Python client for [Couchbase](https://couchbase.com) Operational Insights.
 
 Currently Python 3.10 - Python 3.14 is supported.
 
-The Analytics SDK supports static typing.  Currently only [mypy](https://github.com/python/mypy) is supported.  You mileage may vary (YMMV) with the use of other static type checkers (e.g. [pyright](https://github.com/microsoft/pyright)).
+The Operational Insights SDK supports static typing.  Currently only [mypy](https://github.com/python/mypy) is supported.  You mileage may vary (YMMV) with the use of other static type checkers (e.g. [pyright](https://github.com/microsoft/pyright)).
 
 # Installing the SDK<a id="installing-the-sdk"></a>
 
@@ -11,7 +11,7 @@ The Analytics SDK supports static typing.  Currently only [mypy](https://github.
 
 Install the SDK via `pip`:
 ```console
-python3 -m pip install couchbase-analytics
+python3 -m pip install couchbase-operational-insights
 ```
 
 # Installing the SDK from source
@@ -20,18 +20,18 @@ The SDK can be installed from source via pip with the following command.
 
 Install the SDK via `pip`:
 ```console
-python3 -m pip install git+https://github.com/couchbase/analytics-python-client.git
+python3 -m pip install git+https://github.com/couchbase/operational-insights-python-client.git
 ```
 
 # Using the SDK<a id="using-the-sdk"></a>
 
-Some more examples are provided in the [examples directory](https://github.com/couchbase/analytics-python-client/tree/main/examples).
+Some more examples are provided in the [examples directory](https://github.com/couchbase/operational-insights-python-client/tree/main/examples).
 
 **Connecting and executing a query**
 ```python
-from couchbase_analytics.cluster import Cluster
-from couchbase_analytics.credential import Credential
-from couchbase_analytics.options import QueryOptions
+from couchbase_operational_insights.cluster import Cluster
+from couchbase_operational_insights.credential import Credential
+from couchbase_operational_insights.options import QueryOptions
 
 
 def main() -> None:
@@ -87,9 +87,9 @@ if __name__ == '__main__':
 ```python
 import asyncio
 
-from acouchbase_analytics.cluster import AsyncCluster
-from acouchbase_analytics.credential import Credential
-from acouchbase_analytics.options import QueryOptions
+from acouchbase_operational_insights.cluster import AsyncCluster
+from acouchbase_operational_insights.credential import Credential
+from acouchbase_operational_insights.options import QueryOptions
 
 
 async def main() -> None:
