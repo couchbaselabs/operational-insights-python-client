@@ -56,7 +56,7 @@ file = "LICENSE"
 Homepage = "https://couchbase.com"
 Documentation = "https://docs.couchbase.com/python-analytics-sdk/current/hello-world/overview.html"
 "API Reference" = "https://docs.couchbase.com/sdk-api/operational-insights-python-client/"
-Repository = "https://github.com/couchbase/operational-insights-python-client"
+Repository = "https://github.com/couchbaselabs/operational-insights-python-client"
 "Bug Tracker" = "https://issues.couchbase.com/projects/PYCO/issues/"
 "Release Notes" = "https://docs.couchbase.com/python-analytics-sdk/current/project-docs/analytics-sdk-release-notes.html"
 

@@ -116,11 +116,11 @@ html_static_path = []
 extlinks = {
     'couchbase_dev_portal': ('https://developer.couchbase.com/%s', None),
     'couchbase_discord': ('https://discord.com/invite/sQ5qbPZuTh%s', None),
-    'operational_insights_sdk_github': ('https://github.com/couchbase/operational-insights-python-client%s', None),
+    'operational_insights_sdk_github': ('https://github.com/couchbaselabs/operational-insights-python-client%s', None),
     'acouchbase_operational_insights_examples':
-        ('https://github.com/couchbase/operational-insights-python-client/tree/main/async/examples%s', None),
+        ('https://github.com/couchbaselabs/operational-insights-python-client/tree/main/async/examples%s', None),
     'couchbase_operational_insights_examples':
-        ('https://github.com/couchbase/operational-insights-python-client/tree/main/sync/examples%s', None),
+        ('https://github.com/couchbaselabs/operational-insights-python-client/tree/main/sync/examples%s', None),
     'operational_insights_sdk_jira': ('https://issues.couchbase.com/projects/PYCO/issues/%s', None),
     'operational_insights_sdk_docs': ('https://docs.couchbase.com/python-sdk/current/hello-world/overview.html%s', None),
     'operational_insights_sdk_release_notes':
@@ -128,9 +128,9 @@ extlinks = {
     'operational_insights_sdk_compatibility':
         ('https://docs.couchbase.com/python-sdk/current/project-docs/compatibility.html%s', None),
     'operational_insights_sdk_forums': ('https://forums.couchbase.com/c/python-sdk/10%s', None),
-    'operational_insights_sdk_license': ('https://github.com/couchbase/operational-insights-python-client/blob/main/LICENSE%s', None),
+    'operational_insights_sdk_license': ('https://github.com/couchbaselabs/operational-insights-python-client/blob/main/LICENSE%s', None),
     'operational_insights_sdk_contribute':
-        ('https://github.com/couchbase/operational-insights-python-client/blob/main/CONTRIBUTING.md%s', None),
+        ('https://github.com/couchbaselabs/operational-insights-python-client/blob/main/CONTRIBUTING.md%s', None),
     'operational_insights_sdk_version_compat':
         ('https://docs.couchbase.com/python-sdk/current/project-docs/compatibility.html#python-version-compat%s', None),
 }
