@@ -395,7 +395,18 @@ jobs:
         id: create_wheel
         run: |
           ./ci_scripts/tasks.sh wheel
-          wheel_name=$(find ./dist -name '*.whl' | cut -c 8-)
+          # wheelhouse/dist, not ./dist. The CI core builds every wheel there, the
+          # pure-Python one and the cibuildwheel ones alike, because that is the directory
+          # validate's `--find-links` install reads. Only the sdist lands in ./dist.
+          #
+          # WITH the .whl suffix, unlike the sdist name above: the jobs that consume this
+          # output hand it straight to `pip install`.
+          wheel_path=$(find ./wheelhouse/dist -maxdepth 1 -name '*.whl' | head -1)
+          if [ -z "$wheel_path" ]; then
+            echo "Failed to obtain wheel name: nothing matched ./wheelhouse/dist/*.whl"
+            exit 1
+          fi
+          wheel_name=$(basename "$wheel_path")
           echo "WHEEL_NAME=$wheel_name"
           echo "wheel_name=$wheel_name" >> "$GITHUB_OUTPUT"
       - name: Upload Python sdk
@@ -411,7 +422,7 @@ jobs:
           retention-days: 1
           name: pycboi-artifact-wheel
           path: |
-            ./dist/*.whl
+            ./wheelhouse/dist/*.whl
 
   alpine-unit-tests:
     needs: [setup, test-setup, sdist-wheel, default-linux-runner]
