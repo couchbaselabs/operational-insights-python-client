@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 class AsyncCluster:
     """Create an AsyncCluster instance.
 
-    The cluster instance exposes the operations which are available to be performed against a Operational Insights cluster.
+    The cluster instance exposes the operations which are available to be performed against an Operational Insights cluster.
 
     .. important::
         Use the static :meth:`.AsyncCluster.create_instance` method to create an AsyncCluster.
