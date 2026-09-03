@@ -409,7 +409,7 @@ jobs:
           wheel_name=$(basename "$wheel_path")
           echo "WHEEL_NAME=$wheel_name"
           echo "wheel_name=$wheel_name" >> "$GITHUB_OUTPUT"
-      - name: Upload Python sdk
+      - name: Upload Python sdist
         uses: actions/upload-artifact@v4
         with:
           retention-days: 1
