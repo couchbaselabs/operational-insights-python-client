@@ -92,6 +92,56 @@ Here is a simple example of creating a ``Cluster`` instance and issuing a query.
         print(f'Found row: {row}')
     print(f'metadata={res.metadata()}')
 
+Logging
+=======================
+
+The SDK logs through Python's standard :mod:`logging` module and does not configure the root logger.
+
+The SDK's two APIs are peer top-level packages, so each one logs to a logger named after its package:
+
++-----------------------------------------+------------------------------------------+
+| API                                     | Logger name                              |
++=========================================+==========================================+
+| ``couchbase_operational_insights``      | ``couchbase_operational_insights``       |
++-----------------------------------------+------------------------------------------+
+| ``acouchbase_operational_insights``     | ``acouchbase_operational_insights``      |
++-----------------------------------------+------------------------------------------+
+
+Both names are available as ``LOGGER_NAME`` on the package you imported, so there is no need to hardcode
+the string.
+
+Integrating with your application's logging
+--------------------------------------------
+
+Attach your own handler to the SDK's logger and set the level you want. Nothing else is required.
+
+.. code-block:: python
+
+    import logging
+
+    from couchbase_operational_insights import LOGGER_NAME
+
+    logger = logging.getLogger(LOGGER_NAME)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(my_handler)
+
+If your application has already configured the root logger, SDK records propagate to it like those of any
+other library, and you can filter them by the logger names above.
+
+Quick debugging with an environment variable
+---------------------------------------------
+
+Set ``PYCBOI_LOG_LEVEL`` to turn SDK logging on without changing any code. Accepted values are ``trace``,
+``debug``, ``info``, ``warning``, ``error``, ``critical`` and ``off``.
+
+.. code-block:: console
+
+    $ PYCBOI_LOG_LEVEL=debug python my_app.py
+
+This sets the level on both SDK loggers. It attaches a handler *only* when neither the SDK logger nor the
+root logger already has one. So, in an application that has configured logging, the records simply flow
+into the handlers you installed. The root logger's own handlers and level are never modified.
+
 Source Control
 =======================
 

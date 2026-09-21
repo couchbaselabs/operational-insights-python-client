@@ -18,6 +18,10 @@ import asyncio
 import selectors
 from typing import Optional
 
+from couchbase_operational_insights.common.logging import configure_logging_from_env
+
+configure_logging_from_env()
+
 
 class _LoopValidator:
     """
