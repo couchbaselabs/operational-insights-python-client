@@ -18,3 +18,7 @@ from acouchbase_operational_insights.protocol import get_event_loop as get_event
 from couchbase_operational_insights.common import LOG_DATE_FORMAT as LOG_DATE_FORMAT  # noqa: F401
 from couchbase_operational_insights.common import LOG_FORMAT as LOG_FORMAT  # noqa: F401
 from couchbase_operational_insights.common import JSONType as JSONType  # noqa: F401
+from couchbase_operational_insights.common.logging import ASYNC_LOGGER_NAME
+
+# The name of the logger this API logs to.
+LOGGER_NAME = ASYNC_LOGGER_NAME

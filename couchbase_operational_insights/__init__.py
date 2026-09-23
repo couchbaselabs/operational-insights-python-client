@@ -17,3 +17,7 @@
 from couchbase_operational_insights.common import LOG_DATE_FORMAT as LOG_DATE_FORMAT  # noqa: F401
 from couchbase_operational_insights.common import LOG_FORMAT as LOG_FORMAT  # noqa: F401
 from couchbase_operational_insights.common import JSONType as JSONType  # noqa: F401
+from couchbase_operational_insights.common.logging import SYNC_LOGGER_NAME
+
+# The name of the logger this API logs to.
+LOGGER_NAME = SYNC_LOGGER_NAME

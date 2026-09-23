@@ -24,7 +24,13 @@ from httpx import URL, AsyncClient, Response
 
 from couchbase_operational_insights.common.credential import Credential, _CredentialHolder
 from couchbase_operational_insights.common.deserializer import Deserializer
-from couchbase_operational_insights.common.logging import LogLevel, log_message
+from couchbase_operational_insights.common.logging import (
+    ASYNC_LOGGER_NAME,
+    LogLevel,
+    log_client_version,
+    log_message,
+)
+from couchbase_operational_insights.protocol import PYCBOI_VERSION
 from couchbase_operational_insights.protocol._core.auth import DynamicCredentialAuth
 from couchbase_operational_insights.protocol._core.request import HttpRequest
 from couchbase_operational_insights.protocol.connection import _ConnectionDetails
@@ -37,7 +43,7 @@ class _AsyncClientAdapter:
     """
 
     OPERATIONAL_INSIGHTS_PATH = '/api/v1/request'
-    LOGGER_NAME = 'acouchbase_operational_insights'
+    LOGGER_NAME = ASYNC_LOGGER_NAME
 
     def __init__(
         self, http_endpoint: str, credential: Credential, options: Optional[object] = None, **kwargs: object
@@ -108,13 +114,15 @@ class _AsyncClientAdapter:
         """
         if self._prefix:
             return self._prefix
-        self._prefix = f'[{self._cluster_id}'
-        if self.has_client:
-            self._prefix += f'/{self._client_id}'
-            if self.connection_details.is_secure():
-                self._prefix += '/https]'
-            else:
-                self._prefix += '/http]'
+        if not self.has_client:
+            # The client id and scheme are part of the prefix, so there is nothing worth
+            # caching yet; caching here would pin the truncated form for the cluster's life.
+            return f'[{self._cluster_id}]'
+        self._prefix = f'[{self._cluster_id}/{self._client_id}'
+        if self.connection_details.is_secure():
+            self._prefix += '/https]'
+        else:
+            self._prefix += '/http]'
 
         return self._prefix
 
@@ -160,6 +168,7 @@ class _AsyncClientAdapter:
         """
         if not hasattr(self, '_client'):
             self._client = self._build_client()
+            log_client_version(logger, PYCBOI_VERSION, self.log_prefix)
             self.log_message(
                 (f'Cluster HTTP client created: connection_details={self._conn_details.get_init_details()}'),
                 LogLevel.INFO,

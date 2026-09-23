@@ -15,8 +15,9 @@
 
 
 import logging
+import os
 from enum import Enum
-from typing import Optional
+from typing import Dict, Optional, Set
 
 LOG_FORMAT_ARR = [
     '[%(asctime)s.%(msecs)03d]',
@@ -28,6 +29,12 @@ LOG_FORMAT_ARR = [
 LOG_FORMAT = ' '.join(LOG_FORMAT_ARR)
 LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+# The SDK's two APIs are peer top-level packages, so they get peer logger names that match.  An
+# application configures whichever one it imported; anything the SDK does on its own covers both.
+SYNC_LOGGER_NAME = 'couchbase_operational_insights'
+ASYNC_LOGGER_NAME = 'acouchbase_operational_insights'
+LOG_LEVEL_ENV_VAR = 'PYCBOI_LOG_LEVEL'
+
 
 class LogLevel(Enum):
     DEBUG = logging.DEBUG
@@ -35,6 +42,21 @@ class LogLevel(Enum):
     WARNING = logging.WARNING
     ERROR = logging.ERROR
     CRITICAL = logging.CRITICAL
+
+
+_LOG_LEVEL_NAMES: Dict[str, int] = {
+    'trace': logging.DEBUG,
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warn': logging.WARNING,
+    'warning': logging.WARNING,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL,
+    'off': logging.CRITICAL + 10,
+}
+
+_logging_configured = False
+_version_logged: Set[str] = set()
 
 
 def _has_open_handlers(logger: logging.Logger) -> bool:
@@ -68,3 +90,60 @@ def log_message(logger: logging.Logger, message: str, log_level: LogLevel) -> No
         logger.error(message)
     elif log_level == LogLevel.CRITICAL:
         logger.critical(message)
+
+
+def configure_logging_from_env() -> None:
+    """
+    **INTERNAL** Apply the PYCBOI_LOG_LEVEL environment variable to the SDK's own loggers.
+
+    The root logger belongs to the host application, so it is never configured here.  When the
+    application has already set up logging, the SDK only adjusts the level of its own loggers and
+    lets the records propagate to the handlers the application installed.  Only when nothing else
+    would handle them does the SDK attach a handler of its own.
+    """
+    global _logging_configured
+    if _logging_configured:
+        return
+    _logging_configured = True
+
+    log_level = os.getenv(LOG_LEVEL_ENV_VAR, None)
+    if log_level is None:
+        return
+
+    level = _LOG_LEVEL_NAMES.get(log_level.strip().lower())
+    unrecognized_level = level is None
+    if level is None:
+        level = logging.INFO
+
+    formatter = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
+    root_has_handlers = logging.getLogger().hasHandlers()
+    for logger_name in (SYNC_LOGGER_NAME, ASYNC_LOGGER_NAME):
+        logger = logging.getLogger(logger_name)
+        logger.setLevel(level)
+        if logger.handlers or root_has_handlers:
+            continue
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.propagate = False
+
+    if unrecognized_level:
+        logging.getLogger(SYNC_LOGGER_NAME).warning(
+            f'Unrecognized {LOG_LEVEL_ENV_VAR} value {log_level!r}, defaulting to INFO. '
+            f'Allowed values: {", ".join(sorted(_LOG_LEVEL_NAMES))}.'
+        )
+
+
+def log_client_version(logger: logging.Logger, version: str, prefix: str = '') -> None:
+    """
+    **INTERNAL** Emit the client version banner, at most once per logger.
+
+    Nothing is emitted, and nothing is recorded as emitted, while the logger has no handler that
+    could take the record; an application that configures logging later still gets the banner from
+    its next cluster.
+    """
+    if logger.name in _version_logged or not _has_open_handlers(logger):
+        return
+    _version_logged.add(logger.name)
+    message = f'Python Couchbase Operational Insights Client ({version})'
+    log_message(logger, f'{prefix} {message}'.strip(), LogLevel.INFO)
